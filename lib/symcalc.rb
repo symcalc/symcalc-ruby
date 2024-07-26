@@ -12,9 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+# SymCalc auto simplify option
 if !$SYMCALC_AUTO_SIMPLIFY
 	$SYMCALC_AUTO_SIMPLIFY = true
 end
+
+# The SymCalc module
+module SymCalc
 
 class Equation
 	
@@ -130,9 +135,10 @@ class Equation
 	# fx = x ** 2
 	# puts fx.eval(x: 3)
 	#
-	def eval(var_hash)
+	def eval(var_hash = nil)
+		var_hash = Hash.new if !var_hash
 		if var_hash.values.size == 0
-			result = self.__eval__(Hash.new)
+			result = self.__eval__(var_hash)
 		elsif !var_hash.values[0].is_a?(Array)
 			result = self.__eval__ var_hash
 		elsif var_hash.values[0].is_a? Array
@@ -212,6 +218,43 @@ class EquationValue < Equation
 	
 end
 
+# Implements the Constant class. Behaves like EquationValue when evaluating and like Variable when printing
+class Constant < Equation
+
+	attr_accessor :value, :name
+	
+	def initialize(name, value)
+		@value = value
+		@name = name
+	end
+	
+	def display
+		return @name
+	end
+	
+	def __eval__ var_hash
+		if @value.is_a? Integer
+			return @value.to_f
+		else
+			return @value
+		end
+	end
+	
+	def __derivative__ variable: nil
+		return EquationValue.new 0
+	end
+	
+	def ==(value)
+		@value == value
+	end
+	
+	def all_variables
+		[]
+	end
+
+end
+
+
 # Implements the Variable class
 class Variable < Equation
 	
@@ -224,9 +267,8 @@ class Variable < Equation
 	# fx = x ** 2
 	# fx.eval  # => 25
 	#
-	def initialize name, fixed_value = nil
+	def initialize name
 		@name = name
-		@fixed_value = fixed_value
 	end
 	
 	def display
@@ -234,9 +276,7 @@ class Variable < Equation
 	end
 	
 	def __eval__ var_hash
-		if @fixed_value
-			return @fixed_value
-		elsif var_hash.keys.include?(@name.to_sym) or var_hash.keys.include?(@name.to_s)
+		if var_hash.keys.include?(@name.to_sym) or var_hash.keys.include?(@name.to_s)
 			return (var_hash[@name.to_sym] or var_hash[@name.to_s])
 		else
 			raise "No value provided for #{@name.to_s} in eval"
@@ -261,13 +301,6 @@ class Variable < Equation
 	end
 end
 
-# Basic variables that are already implemented in SymCalc and have fixed values
-module BasicVars
-	
-	Pi = Variable.new "pi", Math::PI
-	E = Variable.new "e", Math::E
-
-end
 
 # Implements sum operations in SymCalc
 class Sum < Equation
@@ -302,6 +335,10 @@ class Sum < Equation
 				next if el.value == 0
 			end
 			true
+		end
+
+		if simplified.size == 1
+			return simplified[0]
 		end
 		
 		return Sum.new(simplified)
@@ -799,44 +836,56 @@ class Abs < Equation
 end
 
 
-# The SymCalc module implemenets the standard function class creations shorter
-module SymCalc
+# Basic variables that are already implemented in SymCalc and have fixed values
+module Constants
+	
+	Pi = Constant.new "pi", Math::PI
+	E = Constant.new "e", Math::E
 
-	# sin(equation) is the same as Sin.new(equation), just shorter
-	def sin(eq)
-		return Sin.new(to_equation(eq))
-	end
-	
-	# cos(equation) is the same as Cos.new(equation), just shorter
-	def cos(eq)
-		return Cos.new(to_equation(eq))
-	end
-	
-	# ln(equation) is the same as Ln.new(equation), just shorter
-	def ln(eq)
-		return Ln.new(to_equation(eq))
-	end
-	
-	# log(base, equation) is the same as Log.new(base, equation), just shorter
-	def log(base, eq)
-		return Log.new(to_equation(base), to_equation(eq))
-	end
-	
-	# exp(equation) is the same as Exp.new(equation), just shorter
-	def exp(power)
-		return Exp.new(to_equation(power))
-	end
-	
-	# var(name) is the same as Variable.new(name), just shorter
-	def var(name, fixed_value=nil)
-		Variable.new name, fixed_value
-	end
-	
-	# abs(equation) is the same as Abs.new(equation), just shorter
-	def abs eq
-		return Abs.new(to_equation(eq))
-	end
-	
-	module_function :sin, :cos, :ln, :log, :exp, :var, :abs
+end
+
+
+
+
+# sin(equation) is the same as Sin.new(equation), just shorter
+def sin(eq)
+	return Sin.new(to_equation(eq))
+end
+
+# cos(equation) is the same as Cos.new(equation), just shorter
+def cos(eq)
+	return Cos.new(to_equation(eq))
+end
+
+# ln(equation) is the same as Ln.new(equation), just shorter
+def ln(eq)
+	return Ln.new(to_equation(eq))
+end
+
+# log(base, equation) is the same as Log.new(base, equation), just shorter
+def log(base, eq)
+	return Log.new(to_equation(base), to_equation(eq))
+end
+
+# exp(equation) is the same as Exp.new(equation), just shorter
+def exp(power)
+	return Exp.new(to_equation(power))
+end
+
+# var(name) is the same as Variable.new(name), just shorter
+def var(name)
+	Variable.new name
+end
+
+def const(name, value)
+	Constant.new name, value
+end
+
+# abs(equation) is the same as Abs.new(equation), just shorter
+def abs eq
+	return Abs.new(to_equation(eq))
+end
+
+module_function :sin, :cos, :ln, :log, :exp, :var, :abs, :const
 	
 end
