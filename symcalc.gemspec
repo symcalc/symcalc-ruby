@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
 	s.files       = ["lib/symcalc.rb"]
 	s.homepage    = "https://symcalc.site/ruby"
 	s.license     = "Apache-2.0"
+	s.required_ruby_version = ">= 3.0.0"
 	s.metadata = {
 		"changelog_uri" => "https://symcalc.site/ruby/changelog",
 		"documentation_uri" => "https://symcalc.site/ruby/docs",
