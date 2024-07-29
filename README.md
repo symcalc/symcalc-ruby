@@ -2,6 +2,16 @@
 
 ![SymCalc Logo](/symcalc_logo.png)
 
+[Website](https://symcalc.site/ruby)
+/
+[License: Apache-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+/
+[Changelog](https://symcalc.site/ruby/changelog)
+/
+[Ruby](https://github.com/symcalc/symcalc-ruby)
+, 
+[C++](https://github.com/symcalc/symcalc-cpp)
+
 SymCalc (which stands for **Sym**bolic **Calc**ulus) is a library that introduces mathematics to code, where you can declare, evaluate, and differentiate any possible maths function with a single call.
 
 SymCalc allows to write readable and flexible code, adding a lot of functionality along the way, like this:
@@ -11,17 +21,9 @@ fx = 5 * x ** 2 + sin(x)
 Instead of hard-coded functions like this:
 ```ruby
 def fx(x)
-	5 * x ** 2 + Math.sin(x)
+    5 * x ** 2 + Math.sin(x)
 end
 ```
-
-[Website](https://symcalc.site/ruby)
-/
-[License: Apache-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-/
-[Ruby](https://github.com/symcalc/symcalc-ruby)
-, 
-[C++](https://github.com/symcalc/symcalc-cpp)
 
 ## Contents
 - [Example](#example)
