@@ -36,23 +36,23 @@ class Equation
 	end
 	
 	def coerce(other)
-		[to_equation(other), self]
+		[SymCalc.to_equation(other), self]
 	end
 
 	def *(eq)
-		eq = Multiplication.new([self, to_equation(eq)])
+		eq = Multiplication.new([self, SymCalc.to_equation(eq)])
 		eq = eq.simplify if $SYMCALC_AUTO_SIMPLIFY
 		eq
 	end
 	
 	def /(eq)
-		eq = Division.new(self, to_equation(eq))
+		eq = Division.new(self, SymCalc.to_equation(eq))
 		eq = eq.simplify if $SYMCALC_AUTO_SIMPLIFY
 		eq
 	end
 	
 	def +(eq)
-		eq = Sum.new([self, to_equation(eq)])
+		eq = Sum.new([self, SymCalc.to_equation(eq)])
 		eq = eq.simplify if $SYMCALC_AUTO_SIMPLIFY
 		eq
 	end
@@ -64,13 +64,13 @@ class Equation
 	end
 	
 	def -(eq)
-		eq = Sum.new([self, Negate.new(to_equation(eq))])
+		eq = Sum.new([self, Negate.new(SymCalc.to_equation(eq))])
 		eq = eq.simplify if $SYMCALC_AUTO_SIMPLIFY
 		eq
 	end
 	
 	def **(eq)
-		eq = Power.new(self, to_equation(eq))
+		eq = Power.new(self, SymCalc.to_equation(eq))
 		eq = eq.simplify if $SYMCALC_AUTO_SIMPLIFY
 		eq
 	end
@@ -154,7 +154,7 @@ class Equation
 	
 	
 	def __sub__ original, replacement
-		return to_equation(replacement) if self == to_equation(original)
+		return SymCalc.to_equation(replacement) if self == SymCalc.to_equation(original)
 		return self
 	end
 	
@@ -288,7 +288,7 @@ class Variable < Equation
 		if variable == nil || variable == self
 			return EquationValue.new 1
 		else
-			return to_equation(0)
+			return SymCalc.to_equation(0)
 		end
 	end
 	
@@ -349,7 +349,7 @@ class Sum < Equation
 	end
 	
 	def __sub__ original, replacement
-		return to_equation(replacement) if self == to_equation(original)
+		return SymCalc.to_equation(replacement) if self == SymCalc.to_equation(original)
 		
 		return Sum.new(@elements.map{|eq| eq.__sub__(original, replacement)})
 	end
@@ -382,7 +382,7 @@ class Negate < Equation
 	end
 	
 	def __sub__ original, replacement
-		return to_equation(replacement) if self == to_equation(original)
+		return SymCalc.to_equation(replacement) if self == SymCalc.to_equation(original)
 		return Negate.new(@eq.__sub__(original, replacement))
 	end
 end
@@ -476,7 +476,7 @@ class Multiplication < Equation
 	end
 	
 	def __sub__ original, replacement
-		return to_equation(replacement) if self == to_equation(original)
+		return SymCalc.to_equation(replacement) if self == SymCalc.to_equation(original)
 		return Multiplication.new(@elements.map{|el| el.__sub__(original, replacement)})
 	end
 end
@@ -501,7 +501,7 @@ class Division < Equation
 	
 	def __derivative__ variable: nil
 		# return (@lside * @rside ** (-1)).derivative(variable: variable)
-		return (@lside.derivative * @rside - @lside * @rside.derivative) / (@rside ** 2)
+		return (@lside.derivative(variable: variable) * @rside - @lside * @rside.derivative(variable: variable)) / (@rside ** 2)
 	end
 	
 	def __simplify__
@@ -528,7 +528,7 @@ class Division < Equation
 	end
 	
 	def __sub__ original, replacement
-		return to_equation(replacement) if self == to_equation(original)
+		return SymCalc.to_equation(replacement) if self == SymCalc.to_equation(original)
 		return @lside.__sub__(original, replacement) / @rside.__sub__(original, replacement)
 	end
 end
@@ -540,7 +540,7 @@ class Exp < Equation
 	attr_accessor :power
 	
 	def initialize power
-		@power = to_equation(power)
+		@power = SymCalc.to_equation(power)
 	end
 	
 	def display
@@ -578,7 +578,7 @@ class Exp < Equation
 	end
 	
 	def __sub__ original, replacement
-		return to_equation(replacement) if self == to_equation(original)
+		return SymCalc.to_equation(replacement) if self == SymCalc.to_equation(original)
 		return Exp.new(@power.__sub__(original, replacement))
 	end
 end
@@ -629,7 +629,7 @@ class Power < Equation
 		elsif s_base.is_a?(EquationValue) && s_power.is_a?(EquationValue)
 			computed = s_base.value ** s_power.value
 			if computed.to_s.size <= 6
-				return to_equation(computed)
+				return SymCalc.to_equation(computed)
 			else
 				return s_base ** power
 			end
@@ -648,7 +648,7 @@ class Power < Equation
 	end
 	
 	def __sub__ original, replacement
-		return to_equation(replacement) if self == to_equation(original)
+		return SymCalc.to_equation(replacement) if self == SymCalc.to_equation(original)
 		return @base.__sub__(original, replacement) ** @power.__sub__(original, replacement)
 	end
 end
@@ -680,7 +680,7 @@ class Sin < Equation
 	end
 	
 	def __sub__ original, replacement
-		return to_equation(replacement) if self == to_equation(original)
+		return SymCalc.to_equation(replacement) if self == SymCalc.to_equation(original)
 		return Sin.new(@eq.__sub__(original, replacement))
 	end
 end
@@ -712,7 +712,7 @@ class Cos < Equation
 	end
 	
 	def __sub__ original, replacement
-		return to_equation(replacement) if self == to_equation(original)
+		return SymCalc.to_equation(replacement) if self == SymCalc.to_equation(original)
 		return Cos.new(@eq.__sub__(original, replacement))
 	end
 end
@@ -748,7 +748,7 @@ class Ln < Equation
 	end
 	
 	def __sub__ original, replacement
-		return to_equation(replacement) if self == to_equation(original)
+		return SymCalc.to_equation(replacement) if self == SymCalc.to_equation(original)
 		return Ln.new(@eq.__sub__(original, replacement))
 	end
 end
@@ -767,8 +767,8 @@ class Log < Equation
 	# fx = Log.new 10, x ** 2
 	#
 	def initialize base, eq
-		@base = to_equation(base)
-		@eq = to_equation(eq)
+		@base = SymCalc.to_equation(base)
+		@eq = SymCalc.to_equation(eq)
 	end
 	
 	def display
@@ -792,7 +792,7 @@ class Log < Equation
 	end
 	
 	def __sub__ original, replacement
-		return to_equation(replacement) if self == to_equation(original)
+		return SymCalc.to_equation(replacement) if self == SymCalc.to_equation(original)
 		return Log.new(@base.__sub__(original, replacement), @eq.__sub__(original, replacement))
 	end
 end
@@ -803,7 +803,7 @@ class Abs < Equation
 	attr_accessor :eq
 	
 	def initialize eq
-		@eq = to_equation(eq)
+		@eq = SymCalc.to_equation(eq)
 	end
 	
 	def display
@@ -830,7 +830,7 @@ class Abs < Equation
 	end
 	
 	def __sub__ original, replacement
-		return to_equation(replacement) if self == to_equation(original)
+		return SymCalc.to_equation(replacement) if self == SymCalc.to_equation(original)
 		return Abs.new(@eq.__sub__(original, replacement))
 	end
 end
@@ -849,27 +849,27 @@ end
 
 # sin(equation) is the same as Sin.new(equation), just shorter
 def sin(eq)
-	return Sin.new(to_equation(eq))
+	return Sin.new(SymCalc.to_equation(eq))
 end
 
 # cos(equation) is the same as Cos.new(equation), just shorter
 def cos(eq)
-	return Cos.new(to_equation(eq))
+	return Cos.new(SymCalc.to_equation(eq))
 end
 
 # ln(equation) is the same as Ln.new(equation), just shorter
 def ln(eq)
-	return Ln.new(to_equation(eq))
+	return Ln.new(SymCalc.to_equation(eq))
 end
 
 # log(base, equation) is the same as Log.new(base, equation), just shorter
 def log(base, eq)
-	return Log.new(to_equation(base), to_equation(eq))
+	return Log.new(SymCalc.to_equation(base), SymCalc.to_equation(eq))
 end
 
 # exp(equation) is the same as Exp.new(equation), just shorter
 def exp(power)
-	return Exp.new(to_equation(power))
+	return Exp.new(SymCalc.to_equation(power))
 end
 
 # var(name) is the same as Variable.new(name), just shorter
@@ -883,9 +883,9 @@ end
 
 # abs(equation) is the same as Abs.new(equation), just shorter
 def abs eq
-	return Abs.new(to_equation(eq))
+	return Abs.new(SymCalc.to_equation(eq))
 end
 
-module_function :sin, :cos, :ln, :log, :exp, :var, :abs, :const
+module_function :sin, :cos, :ln, :log, :exp, :var, :abs, :const, :to_equation
 	
 end
